@@ -4,7 +4,7 @@ module UserResources
   class Forbidden < StandardError; end
 
     
-  class UnprocessableEntity < StandardError
+  class Invalid < StandardError
     attr_accessor :entity, :message
     
     def initialize(entity, message = nil)

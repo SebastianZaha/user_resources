@@ -27,7 +27,7 @@ class ModelTest < Test::Unit::TestCase
     def m.save() false end
 
     msg = 'Model should raise an invalid exception when it cannot be saved.'
-    assert_raise(UserResources::UnprocessableEntity, msg) do
+    assert_raise(UserResources::Invalid, msg) do
       m.user_update(attrs, :someone)
     end
 
