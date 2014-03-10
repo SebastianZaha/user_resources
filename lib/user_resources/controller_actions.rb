@@ -12,13 +12,13 @@ module UserResources::ControllerActions
 
   def create
     o = self.class.user_res_cls.new
-      .user_update(params, current_user)
+      .user_update(resource_attributes, current_user)
     respond_with(o)
   end
 
   def update
     o = self.class.user_res_cls.find(params[:id])
-      .user_update(params, current_user)
+      .user_update(resource_attributes, current_user)
     respond_with(o)
   end
   
@@ -26,6 +26,13 @@ module UserResources::ControllerActions
     o = self.class.user_res_cls.find(params[:id])
       .user_destroy(current_user)
     respond_with(o)
+  end
+
+  # HTML forms by default (at least in rails) name resources attributes like `address[street]`.
+  # JSON APIs and API endpoints usually send a json body with the serialized resource. Rails
+  # decodes this directly in `params`.
+  def resource_attributes
+    request.format.html? ? params[user_res_cls.to_s.downcase] : params
   end
   
 

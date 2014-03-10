@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     user_resources (0.0.1)
-      rails (~> 4.0.2)
+      rails (>= 3.2.16)
 
 GEM
   remote: https://rubygems.org/

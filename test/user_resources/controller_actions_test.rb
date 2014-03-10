@@ -2,23 +2,6 @@ require 'test_helper'
 
 class ControllerActionsTest < Test::Unit::TestCase
 
-
-  class DummyModel
-    def self.find; end
-  end
-
-
-  class DummyController < ActionController::Base
-
-    include UserResources::ControllerActions
-    enable_user_resource_actions(DummyModel, [:create, :update, :destroy])
-
-    attr_accessor :responded_with, :params, :current_user
-
-    def respond_with(obj); @responded_with = obj; end
-  end
-
-
   def setup
     @controller = DummyController.new
     @controller.current_user = :someone
@@ -65,5 +48,28 @@ class ControllerActionsTest < Test::Unit::TestCase
     obj.verify
 
     assert(@controller.responded_with === obj, 'Controller should respond with destroyed object')
+  end
+
+
+  class DummyModel
+    def self.find; end
+  end
+
+
+  class DummyController < ActionController::Base
+
+    include UserResources::ControllerActions
+    enable_user_resource_actions(DummyModel, [:create, :update, :destroy])
+
+    attr_accessor :responded_with, :params, :current_user
+
+    def respond_with(obj); @responded_with = obj; end
+    def request(); DummyRequest.new end
+  end
+
+  class DummyRequest
+    def format
+      Mime::Type.lookup(:json)
+    end
   end
 end
