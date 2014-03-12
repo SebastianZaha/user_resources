@@ -5,12 +5,13 @@ module UserResources
 
     
   class Invalid < StandardError
-    attr_accessor :entity, :message
+    attr_accessor :model, :message
     
-    def initialize(entity, message = nil)
-      @entity = entity
+    def initialize(model, message = nil)
+      @model = model
+
       if !(@message = message)
-        errors = entity.try(:errors)
+        errors = model.try(:errors)
         @message = errors.full_messages.join(',') if errors
       end
     end
