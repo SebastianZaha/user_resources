@@ -198,6 +198,20 @@ Our extension module also defines 2 methods `render_forbidden` and `render_inval
 called when the respective exceptions are raised during the CRUD calls. See the same file for
 what they look like. You can override them in your controllers for special handling.
 
+For example, in a HTML based controller for editing a user's attributes, you'd override it like:
+
+```ruby
+protected
+
+def render_invalid(exception)
+  @user = exception.model
+  render(action: :edit)
+end
+```
+
+This way, if an invalid exception is raised in either the create or update action, the edit page
+is rerendered, which can display @user.errors for example to let the user fix the data and resubmit.
+
 License (MIT)
 -------------
 
