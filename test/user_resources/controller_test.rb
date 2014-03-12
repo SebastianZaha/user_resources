@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ControllerActionsTest < Test::Unit::TestCase
+class ControllerTest < Test::Unit::TestCase
 
   def setup
     @controller = DummyController.new
@@ -58,7 +58,7 @@ class ControllerActionsTest < Test::Unit::TestCase
 
   class DummyController < ActionController::Base
 
-    include UserResources::ControllerActions
+    include UserResources::Controller
     enable_user_resource_actions(DummyModel, [:create, :update, :destroy])
 
     attr_accessor :responded_with, :params, :current_user

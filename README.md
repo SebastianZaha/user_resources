@@ -174,7 +174,7 @@ The Controller
 --------------
 
 To enable support for the following, include the helpers by putting
-`include UserResources::ControllerActions` in your `ApplicationController`.
+`include UserResources::Controller` in your `ApplicationController`.
 
 Since we handled many of the points of our introduction already (in the model), the controller does
 not have to do much anymore. This is what it would look like:

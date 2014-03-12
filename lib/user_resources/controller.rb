@@ -1,6 +1,6 @@
 # Classes including this mixing should implement
 # * current_user - returning the user that is logged in and performs the current action.
-module UserResources::ControllerActions
+module UserResources::Controller
 
 
   protected
