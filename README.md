@@ -173,6 +173,9 @@ end
 The Controller
 --------------
 
+To enable support for the following, include the helpers by putting
+`include UserResources::ControllerActions` in your `ApplicationController`.
+
 Since we handled many of the points of our introduction already (in the model), the controller does
 not have to do much anymore. This is what it would look like:
 
@@ -183,7 +186,6 @@ class MessagesController < ApplicationController
   # We need users to be logged in. This filter is provided by your authentication mechanism.
   before_filter :login_required
 
-  include UserResources::ControllerActions
   enable_user_resource_actions(Message, [:create, :update, :destroy])
 end
 ```
@@ -192,16 +194,9 @@ The `enable_user_resource_actions` call sets up the 3 methods in this controller
 are [very simple](lib/user_resources/controller_actions.rb) and only initialize the object and
 call `user_update` on it, then calling `respond_with` for the result.
 
-Exceptions
-----------
-
-One last thing on our list, handling exceptions. Add the following to `ApplicationController`:
-
-```ruby
-rescue_from UserResources::Forbidden, with: :render_forbidden
-rescue_from UserResources::Invalid, with: :render_invalid
-```
-
+Our extension module also defines 2 methods `render_forbidden` and `render_invalid` that are
+called when the respective exceptions are raised during the CRUD calls. See the same file for
+what they look like. You can override them in your controllers for special handling.
 
 License (MIT)
 -------------

@@ -2,11 +2,34 @@
 # * current_user - returning the user that is logged in and performs the current action.
 module UserResources::ControllerActions
 
+
+  protected
+
+  def render_forbidden
+    return render(nothing: true, status: :forbidden) if request.xhr?
+
+    respond_to do |fmt|
+      fmt.html do
+        flash[:error] = 'Forbidden.'
+        redirect_to('/')
+      end
+      fmt.any { render(nothing: true, status: :forbidden) }
+    end
+  end
+
+  def render_invalid(exception)
+    render(text: exception.message, status: :unprocessable_entity)
+  end
+
   
   private
 
   def self.included(base)
-    base.send :extend, ClassMethods
+    base.class_eval do
+      extend ClassMethods
+      rescue_from UserResources::Forbidden, with: :render_forbidden
+      rescue_from UserResources::Invalid, with: :render_invalid
+    end
   end
 
 
