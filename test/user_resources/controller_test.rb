@@ -51,5 +51,10 @@ class ControllerTest < Test::Unit::TestCase
   end
 
   def test_exception_handling
+    e = ActiveRecord::RecordInvalid.new(ModelStubInvalid.new)
+    @controller.send(:render_invalid, e)
+
+    assert_equal(:unprocessable_entity, @controller.rendered[:status])
+    assert(@controller.rendered[:text].include?('Error'))
   end
 end

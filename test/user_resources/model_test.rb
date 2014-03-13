@@ -12,9 +12,9 @@ class ModelTest < Test::Unit::TestCase
       m.user_update(attrs, :someone)
     end
 
-    m = ModelStubNotValid.new
+    m = ModelStubInvalid.new
     msg = 'Model should raise an invalid exception when it cannot be saved.'
-    assert_raise(UserResources::Invalid, msg) do
+    assert_raise(ActiveRecord::RecordInvalid, msg) do
       m.user_update(attrs, :someone)
     end
 

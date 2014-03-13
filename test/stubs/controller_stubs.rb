@@ -4,12 +4,16 @@ class ControllerStub < ActionController::Base
     def format
       Mime::Type.lookup(:json)
     end
+
+    def xhr?
+      true
+    end
   end
 
   include UserResources::Controller
   enable_user_resource_actions(ModelStub, [:create, :update, :destroy])
 
-  attr_accessor :responded_with, :params, :current_user, :redirected_to
+  attr_accessor :responded_with, :params, :current_user, :redirected_to, :rendered
 
   def respond_with(obj)
     @responded_with = obj
@@ -19,15 +23,11 @@ class ControllerStub < ActionController::Base
     @redirected_to = url
   end
 
+  def render(hash)
+    @rendered = hash
+  end
+
   def request
     RequestStub.new
-  end
-
-  def invalid_action
-    raise UserResources::Invalid.new(ModelStub.new)
-  end
-
-  def forbidden_action
-    raise UserResources::Forbidden.new
   end
 end

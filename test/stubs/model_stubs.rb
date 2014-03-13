@@ -21,6 +21,10 @@ class ModelStub
     false
   end
 
+  def new_record?
+    true
+  end
+
 
   protected
 
@@ -36,9 +40,18 @@ class ModelStubNotEditable < ModelStub
   end
 end
 
-class ModelStubNotValid < ModelStub
+class ModelStubInvalid < ModelStub
+  # Required dependency for ActiveModel::Errors
+  extend ActiveModel::Naming
+  extend ActiveModel::Translation
+  extend ActiveModel::Validations
+
   def save
     false
+  end
+
+  def errors
+    ActiveModel::Errors.new(self)
   end
 end
 

@@ -12,7 +12,7 @@ module UserResources::Controller
     base.class_eval do
       extend ClassMethods
       rescue_from UserResources::Forbidden, with: :render_forbidden
-      rescue_from UserResources::Invalid, with: :render_invalid
+      rescue_from ActiveRecord::RecordInvalid, with: :render_invalid
     end
   end
 

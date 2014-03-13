@@ -19,3 +19,5 @@ end
 
 require_relative 'stubs/model_stubs'
 require_relative 'stubs/controller_stubs'
+
+I18n.enforce_available_locales = false

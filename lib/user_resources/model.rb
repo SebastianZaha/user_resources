@@ -56,7 +56,7 @@ module UserResources::Model
     raise UserResources::Forbidden unless editable_by?(user)
 
     # Save the record
-    raise UserResources::Invalid.new(self) if !save
+    raise ActiveRecord::RecordInvalid.new(self) if !save
 
     self.user_performing_update = self.attributes_from_client = nil
 
