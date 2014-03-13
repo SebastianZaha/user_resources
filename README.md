@@ -68,7 +68,7 @@ Including `UserResources::Model` provides ChatMessage with 2 methods: `user_upda
 `user_destroy`. They both require the model to define `editable_by?(user)`.
 
 These 2 methods check that the user is allowed to edit the model, raise a `UserResources::Forbidden`
-exception otherwise, and a `UserResources::Invalid` if any kind of validations fail.
+exception otherwise, and a `ActiveRecord::RecordInvalid` if any kind of validations fail.
 
 The `editable_by?` method is called twice when using `user_update`. The first time is before the
 new attributes are set on it. This checks that __the user is allowed to see and change this
@@ -204,7 +204,7 @@ For example, in a HTML based controller for editing a user's attributes, you'd o
 protected
 
 def render_invalid(exception)
-  @user = exception.model
+  @user = exception.record
   render(action: :edit)
 end
 ```
