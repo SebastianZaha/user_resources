@@ -1,9 +1,9 @@
-require 'test_helper'
+require_relative '../test_helper'
 
 class ControllerTest < Test::Unit::TestCase
 
   def setup
-    @controller = DummyController.new
+    @controller = ControllerStub.new
     @controller.current_user = :someone
     @controller.params = {id: 1, name: 'Hello'}
   end
@@ -14,7 +14,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:user_update, obj, [@controller.params, @controller.current_user])
 
-    DummyModel.stub :new, obj do
+    ModelStub.stub :new, obj do
       @controller.create
     end
     obj.verify
@@ -28,7 +28,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:user_update, obj, [@controller.params, @controller.current_user])
 
-    DummyModel.stub :find, obj do
+    ModelStub.stub :find, obj do
       @controller.update
     end
     obj.verify
@@ -42,7 +42,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:user_destroy, obj, [@controller.current_user])
 
-    DummyModel.stub :find, obj do
+    ModelStub.stub :find, obj do
       @controller.destroy
     end
     obj.verify
@@ -50,26 +50,6 @@ class ControllerTest < Test::Unit::TestCase
     assert(@controller.responded_with === obj, 'Controller should respond with destroyed object')
   end
 
-
-  class DummyModel
-    def self.find; end
-  end
-
-
-  class DummyController < ActionController::Base
-
-    include UserResources::Controller
-    enable_user_resource_actions(DummyModel, [:create, :update, :destroy])
-
-    attr_accessor :responded_with, :params, :current_user
-
-    def respond_with(obj); @responded_with = obj; end
-    def request(); DummyRequest.new end
-  end
-
-  class DummyRequest
-    def format
-      Mime::Type.lookup(:json)
-    end
+  def test_exception_handling
   end
 end

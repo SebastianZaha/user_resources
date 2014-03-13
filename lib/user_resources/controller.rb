@@ -1,27 +1,11 @@
+require_relative 'controller_exception_handling'
+
 # Classes including this mixing should implement
 # * current_user - returning the user that is logged in and performs the current action.
 module UserResources::Controller
 
+  include UserResources::ControllerExceptionHandling
 
-  protected
-
-  def render_forbidden
-    return render(nothing: true, status: :forbidden) if request.xhr?
-
-    respond_to do |fmt|
-      fmt.html do
-        flash[:error] = 'Forbidden.'
-        redirect_to('/')
-      end
-      fmt.any { render(nothing: true, status: :forbidden) }
-    end
-  end
-
-  def render_invalid(exception)
-    render(text: exception.message, status: :unprocessable_entity)
-  end
-
-  
   private
 
   def self.included(base)
@@ -57,7 +41,7 @@ module UserResources::Controller
   def resource_attributes
     request.format.html? ? params[user_res_cls.to_s.downcase] : params
   end
-  
+
 
   module ClassMethods
 
