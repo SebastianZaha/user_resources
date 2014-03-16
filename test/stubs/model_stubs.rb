@@ -51,7 +51,9 @@ class ModelStubInvalid < ModelStub
   end
 
   def errors
-    ActiveModel::Errors.new(self)
+    err = ActiveModel::Errors.new(self)
+    err.add(:base, 'Email not valid')
+    err
   end
 end
 
