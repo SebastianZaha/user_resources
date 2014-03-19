@@ -191,7 +191,7 @@ end
 ```
 
 The `enable_user_resource_actions` call sets up the 3 methods in this controller. The methods
-are [very simple](lib/user_resources/controller_actions.rb) and only initialize the object and
+are [very simple](lib/user_resources/controller.rb) and only initialize the object and
 call `user_update` on it, then calling `respond_with` for the result.
 
 Our extension module also defines 2 methods `render_forbidden` and `render_invalid` that are
