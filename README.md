@@ -121,6 +121,28 @@ def sanitize_attributes
 end
 ```
 
+### Attribute pre-processing
+
+Clients sometimes send data that is not exactly in the format we save it on our models. Normally
+we would process this data in the controller, but since we're moving everything to our model,
+UserResources::Model now provides a callback for that:
+
+The method you define takes the client attributes as a hash and should return another has of
+processed attributes in return.
+
+```ruby
+before_attributes_set :preprocess_money
+
+protected
+
+def preprocess_money(attrs)
+  cleaned = attrs.clone
+  # Convert client-sent dollar values('$1.25') into cents(125)
+  cleaned[:money] = TextUtils.parse_money(attrs[:money])
+  cleaned
+end
+```
+
 ### Side-Effects
 
 Somtimes the business logic of your model defines side effects of some type of resource changing.

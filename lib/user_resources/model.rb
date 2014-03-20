@@ -12,13 +12,14 @@
 #   * attributes=(Hash)
 #
 # Provides:
-#   * self.user_performing_update -> Object (whatever the caller passes to user_updates)
-#   * self.attributes_from_client -> Hash
 #   * self.attr_immutable(Array<Symbol> attribute_names)
 #   * self.before_attributes_set(Symbol method_name)
-#     - requires: method(Hash attributes) -> Hash
-#     - method will be called before client sent attributes are set. It should return a set of
-#       pre-processed attributes if it needs to pre-process them
+#     Requires: method(Hash attributes) -> Hash
+#     Method will be called before client sent attributes are set. It should return a set of
+#     pre-processed attributes if it needs to pre-process them.
+#
+#   * user_performing_update -> Object (whatever the caller passes to user_updates)
+#   * attributes_from_client -> Hash
 #
 #   * user_update(Hash attrs, Object user)
 #   * user_destroy(Object user)
@@ -48,17 +49,19 @@ module UserResources::Model
     raise UserResources::Forbidden unless editable_by?(user)
     self.user_performing_update = user
 
-    callback = self.class.instance_variable_get(:@before_attr_set)
-    self.attributes_from_client = callback ? self.send(callback, attrs) : attrs
+    transaction do
+      callback = self.class.instance_variable_get(:@before_attr_set)
+      self.attributes_from_client = callback ? self.send(callback, attrs) : attrs
 
-    self.attributes = sanitize_immutable(attributes_from_client)
+      self.attributes = sanitize_immutable(attributes_from_client)
 
-    raise UserResources::Forbidden unless editable_by?(user)
+      raise UserResources::Forbidden unless editable_by?(user)
 
-    # Save the record
-    raise ActiveRecord::RecordInvalid.new(self) if !save
+      # Save the record
+      raise ActiveRecord::RecordInvalid.new(self) if !save
 
-    self.user_performing_update = self.attributes_from_client = nil
+      self.user_performing_update = self.attributes_from_client = nil
+    end
 
     self
   end
@@ -67,12 +70,16 @@ module UserResources::Model
   def user_destroy(user)
     raise UserResources::Forbidden if !editable_by?(user)
 
-    self.user_performing_update = user
-    self.attributes_from_client = {}
+    transaction do
 
-    destroy
+      self.user_performing_update = user
+      self.attributes_from_client = {}
 
-    self.user_performing_update = self.attributes_from_client = nil
+      destroy
+
+      self.user_performing_update = self.attributes_from_client = nil
+    end
+
     self
   end
 

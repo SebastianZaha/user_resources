@@ -25,6 +25,10 @@ class ModelStub
     true
   end
 
+  def transaction
+    yield
+  end
+
 
   protected
 
