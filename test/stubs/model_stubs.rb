@@ -1,17 +1,10 @@
 class ModelStub
-  include UserResources::Model
 
   attr_accessor :attributes
 
-  before_attributes_set :preprocess_attributes
-
-  def self.find
+  def self.find(*args)
   end
 
-
-  def editable_by?(user)
-    true
-  end
 
   def save
     true
@@ -27,20 +20,6 @@ class ModelStub
 
   def transaction
     yield
-  end
-
-
-  protected
-
-  def preprocess_attributes(attrs)
-    attrs
-  end
-end
-
-
-class ModelStubNotEditable < ModelStub
-  def editable_by?(user)
-    false
   end
 end
 
@@ -61,6 +40,10 @@ class ModelStubInvalid < ModelStub
   end
 end
 
-class ModelStubWithImmutable < ModelStub
-  attr_immutable :not_mut
+
+class ModelStub::UserAction < UserResources::UserAction
+
+  def allowed?
+    true
+  end
 end
