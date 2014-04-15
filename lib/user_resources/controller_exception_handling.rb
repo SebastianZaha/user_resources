@@ -1,6 +1,6 @@
 require_relative 'extensions/active_model_errors'
 
-module UserResources::ControllerExceptionHandling
+module UserResources::Controller::ExceptionHandling
 
   protected
 
@@ -27,6 +27,14 @@ module UserResources::ControllerExceptionHandling
         redirect_to(:back)
       end
       fmt.any { render(non_html) }
+    end
+  end
+
+
+  def self.included(base)
+    base.class_eval do
+      rescue_from UserResources::Forbidden, with: :render_forbidden
+      rescue_from ActiveRecord::RecordInvalid, with: :render_invalid
     end
   end
 end

@@ -12,9 +12,9 @@ class ControllerTest < Test::Unit::TestCase
     # The resource that the controller should create.
     obj = Minitest::Mock.new
     # Our assertions
-    obj.expect(:user_update, obj, [@controller.params, @controller.current_user])
+    obj.expect(:create, obj, [@controller.params])
 
-    ModelStub.stub :new, obj do
+    (ModelStub::UserAction).stub :new, obj do
       @controller.create
     end
     obj.verify
@@ -26,9 +26,9 @@ class ControllerTest < Test::Unit::TestCase
     # The resource that the controller should create.
     obj = Minitest::Mock.new
     # Our assertions
-    obj.expect(:user_update, obj, [@controller.params, @controller.current_user])
+    obj.expect(:update, obj, [@controller.params])
 
-    ModelStub.stub :find, obj do
+    (ModelStub::UserAction).stub :new, obj do
       @controller.update
     end
     obj.verify
@@ -40,9 +40,9 @@ class ControllerTest < Test::Unit::TestCase
     # The resource that the controller should create.
     obj = Minitest::Mock.new
     # Our assertions
-    obj.expect(:user_destroy, obj, [@controller.current_user])
+    obj.expect(:destroy, obj, [])
 
-    ModelStub.stub :find, obj do
+    (ModelStub::UserAction).stub :new, obj do
       @controller.destroy
     end
     obj.verify

@@ -46,56 +46,55 @@ to handle the input of messages. So we create first a model:
 ```ruby
 class ChatMessage < ActiveRecord::Base
 
-  include UserResources::Model
-
   belongs_to :author, class_name: User
   belongs_to :channel
 
   validates_presence_of :author, :channel, :text
+end
+```
 
-  attr_immutable :channel_id, :author_id
+### Representing a user action on this model
 
+```ruby
+class ChatMessage::UserAction < UserResources::UserAction
 
-  def editable_by?(user)
-    channel ? channel.members.include?(user) : true
+  def allowed?
+    @resource.channel.members.include?(@user)
+  end
+  
+  # :channel_id and :author_id are immutable, we do not allow them to be updated after being set.
+  def before_update(attrs)
+    attrs.select { |k, v| k != :channel_id && k != :author_id }
   end
 end
 ```
 
 ### Permissions
 
-Including `UserResources::Model` provides ChatMessage with 2 methods: `user_update` and
-`user_destroy`. They both require the model to define `editable_by?(user)`.
+`UserResources::UserAction` provides us with 3 methods: `create`, `update` and `destroy`.
 
-These 2 methods check that the user is allowed to edit the model, raise a `UserResources::Forbidden`
-exception otherwise, and a `ActiveRecord::RecordInvalid` if any kind of validations fail.
+These methods check that the user is allowed to edit the model, raise a `UserResources::Forbidden`
+exception otherwise, or an `ActiveRecord::RecordInvalid` if any kind of validations fail.
 
-The `editable_by?` method is called twice when using `user_update`. The first time is before the
-new attributes are set on it. This checks that __the user is allowed to see and change this
-resources in any way__.
+All we need to do in our inherited action class is provide a method `allowed?`. This method 
+checks if `@user` has permissions to edit the resource `@resource`.
 
 Let us examine the possible ways this model could be restricted with regard to its channel
 association.
 
 1. A user is not allowed to change the channel of a message after he set it.
 
-   For this type of attributes, UserResources::Model provides the class method `attr_immutable`,
-   which can seen in the snippet above. All attributes declared like that will be ignored on
-   subsequent updates after the object is first persisted.
-
+   For this type of attributes, we need to filter them out when updating an existing resource. 
+   We can do this by providing the method `before_update`. This method can process the attributes 
+   and return a new hash that excludes them.
+   
 2. A user can move a message to another channel, as long as he has access to the
    destination channel.
 
-   This case is already covered by `user_update` because editable_by? is called a second time after
-   the attributes have been set. This ensures that even after the object changed, it is still
-   accessible to the person who changed it.
+   This case is already covered by `update` because `allowed?` will return false. This ensures that 
+   even after the object changed, it is still accessible to the person who changed it.
 
-You can see more details in [the model file](lib/user_resources/model.rb).
-
-__Please note:__ These checks are done only when you modify your models through our `user_update`
-and `user_destroy` methods. All other direct manipulation of these models is unchecked. You might
-want to do those thigs of course, from administration consoles / interfaces, but know that when you
-do, all bets are off.
+You can see more details in [the model file](lib/user_resources/user_action.rb).
 
 ### Sanitization
 
@@ -124,22 +123,28 @@ end
 ### Attribute pre-processing
 
 Clients sometimes send data that is not exactly in the format we save it on our models. Normally
-we would process this data in the controller, but since we're moving everything to our model,
-UserResources::Model now provides a callback for that:
+we would process this data in the controller, but since we're moving everything to the Action layer,
+we can use a `before_save` method on the action.
 
-The method you define takes the client attributes as a hash and should return another has of
+The method takes the client attributes as a hash and should return another hash of
 processed attributes in return.
 
 ```ruby
-before_attributes_set :preprocess_money
 
-protected
+class ChatMessage::UserAction < UserResources::UserAction
 
-def preprocess_money(attrs)
-  cleaned = attrs.clone
-  # Convert client-sent dollar values('$1.25') into cents(125)
-  cleaned[:money] = TextUtils.parse_money(attrs[:money])
-  cleaned
+  def before_save(attrs)
+    preprocess_money(attrs)
+  end
+  
+  private
+   
+  def preprocess_money(attrs)
+    cleaned = attrs.clone
+    # Convert client-sent dollar values('$1.25') into cents(125)
+    cleaned[:money] = TextUtils.parse_money(attrs[:money])
+    cleaned
+  end
 end
 ```
 
@@ -147,59 +152,51 @@ end
 
 Somtimes the business logic of your model defines side effects of some type of resource changing.
 Let's say in our chat example, whenever someone posts a message, the other channel memebers should
-be notified. I'd do this with another model filter in our message model:
+be notified. We can use the after_create method in the action for this:
 
 ```ruby
-after_create :notify_members
+class ChatMessage::UserAction < UserResources::UserAction
 
-protected
-
-def notify_members
-  channel.members.each do |m|
-    if m != author
-      Mailer.notify_message(m, self, author).deliver
+  def after_create
+    notify_members
+  end
+  
+  private
+  def notify_members
+    @resource.channel.members.each do |m|
+      if m != @resource.author
+        Mailer.notify_message(m, @resource, @user).deliver
+      end
     end
   end
 end
 ```
 
-The message would be something like `Hello #{m.name}, #{author.name} posted #{msg.text}`.
+The message would be something like `Hello #{m.name}, #{user.name} posted #{msg.text}`.
 
-Now let us assume we wish to send the same notfications whenever a message is _modified_, not only
-created. However, in our notification email we have to refer to the person who is modifying the
-message. How would we do that with a callback, since the message model does not know who is
- modifying it, it only has a reference to `author`, which is the original author of the message.
+Note that we are using `@user` here for the notification. `@user` in an action represents the 
+author of that action. 
 
-UserResources has an answer to that. As long as your resource is modified with `user_update` or
-`user_destroy`, the mixin provides access to the following 2 attributes, for the entire callback
-stack during an update to the resource:
-  * `user_performing_update`
-  * `attributes_from_client`
+The Controller Actions
+----------------------
 
-This means that we could solve our little problem with the following callback:
+Since all our logic has moved to the actions, controller methods are very thin now:
 
 ```ruby
-after_update :notify_members, if: :user_performing_update
-
-protected
-
-def notify_members
-  channel.members.each do |m|
-     if m != user_performing_update
-       Mailer.notify_message(m, self, user_performing_update).deliver
-     end
+class ChatMessagesController < ApplicationController
+  
+  def create
+    model = ChatMessage.new
+    action = ChatMessage::UserAction.new(model, current_user)
+    respond_with(action.create(params))
   end
-end
 ```
 
-The Controller
---------------
+Since all controllers for your models will end up looking identical, this gem provides you with
+a helper that exposes these methods.
 
-To enable support for the following, include the helpers by putting
-`include UserResources::Controller` in your `ApplicationController`.
-
-Since we handled many of the points of our introduction already (in the model), the controller does
-not have to do much anymore. This is what it would look like:
+Fist, include the helpers by putting `include UserResources::Controller::Actions` in 
+your `ApplicationController`. Then:
 
 ```ruby
 # app/controllers/messages_controller.rb
@@ -212,13 +209,13 @@ class MessagesController < ApplicationController
 end
 ```
 
-The `enable_user_resource_actions` call sets up the 3 methods in this controller. The methods
-are [very simple](lib/user_resources/controller.rb) and only initialize the object and
-call `user_update` on it, then calling `respond_with` for the result.
+### Exception handling
 
-Our extension module also defines 2 methods `render_forbidden` and `render_invalid` that are
-called when the respective exceptions are raised during the CRUD calls. See the same file for
-what they look like. You can override them in your controllers for special handling.
+The gem also provides a module that automatically handles forbidden and invalid exceptions 
+with the methods `render_forbidden` and `render_invalid`. See
+[the exception_hadling module](user_resources/controller_exception_handling.rb) for details.
+
+You can override them in your controllers for special handling.
 
 For example, in a HTML based controller for editing a user's attributes, you'd override it like:
 

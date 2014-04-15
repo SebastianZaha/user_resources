@@ -10,7 +10,9 @@ class ControllerStub < ActionController::Base
     end
   end
 
-  include UserResources::Controller
+  include UserResources::Controller::Actions
+  include UserResources::Controller::ExceptionHandling
+  
   enable_user_resource_actions(ModelStub, [:create, :update, :destroy])
 
   attr_accessor :responded_with, :params, :current_user, :redirected_to, :rendered
