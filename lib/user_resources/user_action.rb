@@ -5,7 +5,9 @@ class UserResources::UserAction
   end
 
   def create(attrs)
-    raise UserResources::Forbidden if @resource.persisted?
+    if @resource.persisted?
+      raise UserResources::Forbidden.new('Cannot create, resource already persisted') 
+    end
     
     @resource.transaction do
       attrs = before_create(attrs) || attrs
@@ -13,7 +15,7 @@ class UserResources::UserAction
 
       @resource.attributes = attrs
 
-      raise UserResources::Forbidden unless allowed?
+      raise UserResources::Forbidden.new('Action not allowed') unless allowed?
 
       # Save the record
       raise ActiveRecord::RecordInvalid.new(@resource) unless @resource.save
@@ -26,18 +28,20 @@ class UserResources::UserAction
   end
   
   def update(attrs)
-    raise UserResources::Forbidden unless @resource.persisted?
+    unless @resource.persisted?
+      raise UserResources::Forbidden.new('Cannot update, resource not persisted yet.')
+    end
     
     @resource.transaction do
 
       attrs = before_update(attrs) || attrs
       attrs = before_save(attrs) || attrs
 
-      raise UserResources::Forbidden unless allowed?
+      raise UserResources::Forbidden.new('Action not allowed') unless allowed?
 
       @resource.attributes = attrs
 
-      raise UserResources::Forbidden unless allowed?
+      raise UserResources::Forbidden.new('Action not allowed') unless allowed?
 
       # Save the record
       raise ActiveRecord::RecordInvalid.new(@resource) unless @resource.save
@@ -53,7 +57,7 @@ class UserResources::UserAction
     @resource.transaction do
       before_destroy
     
-      raise UserResources::Forbidden unless allowed?
+      raise UserResources::Forbidden.new('Action not allowed') unless allowed?
       
       @resource.destroy
     
