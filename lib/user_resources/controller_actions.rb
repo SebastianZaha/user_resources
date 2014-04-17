@@ -46,7 +46,7 @@ module UserResources::Controller::Actions
   end
   
   def action_class
-    model_class::UserAction
+    "#{model_class}Action".constantize
   end
 
 

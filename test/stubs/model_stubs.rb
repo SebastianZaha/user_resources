@@ -41,7 +41,7 @@ class ModelStubInvalid < ModelStub
 end
 
 
-class ModelStub::UserAction < UserResources::UserAction
+class ModelStubAction < UserResources::UserAction
 
   def allowed?
     true

@@ -56,7 +56,7 @@ end
 ### Representing a user action on this model
 
 ```ruby
-class ChatMessage::UserAction < UserResources::UserAction
+class ChatMessageAction < UserResources::UserAction
 
   def allowed?
     @resource.channel.members.include?(@user)
@@ -131,7 +131,7 @@ processed attributes in return.
 
 ```ruby
 
-class ChatMessage::UserAction < UserResources::UserAction
+class ChatMessageAction < UserResources::UserAction
 
   def before_save(attrs)
     preprocess_money(attrs)
@@ -155,7 +155,7 @@ Let's say in our chat example, whenever someone posts a message, the other chann
 be notified. We can use the after_create method in the action for this:
 
 ```ruby
-class ChatMessage::UserAction < UserResources::UserAction
+class ChatMessageAction < UserResources::UserAction
 
   def after_create
     notify_members
@@ -187,7 +187,7 @@ class ChatMessagesController < ApplicationController
   
   def create
     model = ChatMessage.new
-    action = ChatMessage::UserAction.new(model, current_user)
+    action = ChatMessageAction.new(model, current_user)
     respond_with(action.create(params))
   end
 ```

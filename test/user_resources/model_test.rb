@@ -7,7 +7,7 @@ class ModelTest < Test::Unit::TestCase
     attrs = {name: 'Hello'}
 
     m = ModelStub.new
-    a = ModelStub::UserAction.new(m, :someone)
+    a = ModelStubAction.new(m, :someone)
     def a.allowed? 
       false
     end
@@ -18,7 +18,7 @@ class ModelTest < Test::Unit::TestCase
     end
 
     m = ModelStubInvalid.new
-    a = ModelStub::UserAction.new(m, :someone)
+    a = ModelStubAction.new(m, :someone)
     msg = 'Model should raise an invalid exception when it cannot be saved.'
     assert_raise(ActiveRecord::RecordInvalid, msg) do
       a.create(attrs)
@@ -26,14 +26,14 @@ class ModelTest < Test::Unit::TestCase
 
     # Now it's both valid, and editable
     m = ModelStub.new
-    a = ModelStub::UserAction.new(m, :someone)
+    a = ModelStubAction.new(m, :someone)
     a.create(attrs)
     assert_equal(m.attributes, attrs, 'Should set attributes on the model')
   end
 
   def test_before_save
     m = ModelStub.new
-    a = ModelStub::UserAction.new(m, :someone)
+    a = ModelStubAction.new(m, :someone)
     
     attrs = {id: 1, illegal_attr: true}
 
@@ -51,7 +51,7 @@ class ModelTest < Test::Unit::TestCase
     attrs = {id: 1, not_mut: 2}
 
     m = ModelStub.new
-    a = ModelStub::UserAction.new(m, :someone)
+    a = ModelStubAction.new(m, :someone)
     a.create(attrs)
     assert_equal(1, m.attributes[:id])
     assert_equal(2, m.attributes[:not_mut])

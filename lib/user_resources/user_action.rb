@@ -10,8 +10,8 @@ class UserResources::UserAction
     end
     
     @resource.transaction do
-      attrs = before_create(attrs) || attrs
       attrs = before_save(attrs) || attrs
+      attrs = before_create(attrs) || attrs
 
       @resource.attributes = attrs
 
@@ -20,8 +20,8 @@ class UserResources::UserAction
       # Save the record
       raise ActiveRecord::RecordInvalid.new(@resource) unless @resource.save
 
-      after_save(attrs)
       after_create(attrs)
+      after_save(attrs)
     end
 
     @resource
@@ -34,8 +34,8 @@ class UserResources::UserAction
     
     @resource.transaction do
 
-      attrs = before_update(attrs) || attrs
       attrs = before_save(attrs) || attrs
+      attrs = before_update(attrs) || attrs
 
       raise UserResources::Forbidden.new('Action not allowed') unless allowed?
 
@@ -46,8 +46,8 @@ class UserResources::UserAction
       # Save the record
       raise ActiveRecord::RecordInvalid.new(@resource) unless @resource.save
 
-      after_save(attrs)
       after_update(attrs)
+      after_save(attrs)
     end
 
     @resource

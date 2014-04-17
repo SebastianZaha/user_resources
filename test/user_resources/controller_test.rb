@@ -14,7 +14,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:create, obj, [@controller.params])
 
-    (ModelStub::UserAction).stub :new, obj do
+    (ModelStubAction).stub :new, obj do
       @controller.create
     end
     obj.verify
@@ -28,7 +28,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:update, obj, [@controller.params])
 
-    (ModelStub::UserAction).stub :new, obj do
+    (ModelStubAction).stub :new, obj do
       @controller.update
     end
     obj.verify
@@ -42,7 +42,7 @@ class ControllerTest < Test::Unit::TestCase
     # Our assertions
     obj.expect(:destroy, obj, [])
 
-    (ModelStub::UserAction).stub :new, obj do
+    (ModelStubAction).stub :new, obj do
       @controller.destroy
     end
     obj.verify
