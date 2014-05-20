@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class ControllerTest < Test::Unit::TestCase
+class ControllerTest < MiniTest::Test
 
   def setup
     @controller = ControllerStub.new

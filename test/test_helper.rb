@@ -1,4 +1,5 @@
-require 'test/unit'
+gem 'minitest'
+require 'minitest/autorun'
 require 'minitest/mock'
 
 # Configure Rails Environment

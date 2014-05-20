@@ -1,7 +1,7 @@
 require_relative '../test_helper'
 
-class ModelTest < Test::Unit::TestCase
-
+class ModelTest < Minitest::Test
+  
 
   def test_exceptions
     attrs = {name: 'Hello'}
@@ -13,14 +13,14 @@ class ModelTest < Test::Unit::TestCase
     end
     
     msg = 'Model should raise a forbidden exception when it is not editable by this user.'
-    assert_raise(UserResources::Forbidden, msg) do
+    assert_raises(UserResources::Forbidden, msg) do
       a.create(attrs)
     end
 
     m = ModelStubInvalid.new
     a = ModelStubAction.new(m, :someone)
     msg = 'Model should raise an invalid exception when it cannot be saved.'
-    assert_raise(ActiveRecord::RecordInvalid, msg) do
+    assert_raises(ActiveRecord::RecordInvalid, msg) do
       a.create(attrs)
     end
 
