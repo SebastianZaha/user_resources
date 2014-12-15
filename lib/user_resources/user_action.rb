@@ -10,6 +10,8 @@ class UserResources::UserAction
     end
     
     @resource.transaction do
+      @original_attrs = @resource.attributes
+
       attrs = before_save(attrs) || attrs
       attrs = before_create(attrs) || attrs
 
@@ -33,6 +35,7 @@ class UserResources::UserAction
     end
     
     @resource.transaction do
+      @original_attrs = @resource.attributes
 
       attrs = before_save(attrs) || attrs
       attrs = before_update(attrs) || attrs
@@ -103,8 +106,8 @@ class UserResources::UserAction
   # Helper method to see if an attribute has been changed by this action. By passing `to` one can
   # also check if that attribute changed to a specific value.
   def attribute_changed?(attrs, attribute, to = nil)
-    # ActiveRecord#attributes has symbols as hash keys.
-    before = @resource.attributes[attribute.to_sym] 
+    # ActiveRecord#attributes has strings as hash keys.
+    before = @original_attrs[attribute]
     after = attrs[attribute]
     
     if attrs.key?(attribute) && before != after
