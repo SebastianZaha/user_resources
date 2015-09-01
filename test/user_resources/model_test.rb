@@ -71,4 +71,32 @@ class ModelTest < Minitest::Test
     # ActiveRecord)
     assert_equal(nil, m.attributes[:not_mut], 'The immutable attribute was reset')
   end
+
+  def test_attribute_changed?
+    attrs = {'id' => 1, 'field1' => 1}
+
+    m = ModelStub.new
+    a = ModelStubAction.new(m, :someone)
+
+    a.create(attrs)
+    assert_equal(1, m.attributes['id'])
+    assert_equal(1, m.attributes['field1'])
+
+    def m.persisted?() true end
+    def a.after_update(attrs)
+      if attribute_changed?(attrs, 'field1')
+        @resource.count += 1
+      end
+    end
+
+    assert_equal(0, m.count)
+    a.update({'field1' => 2})
+    assert_equal(1, m.count)
+
+    a.update({'field1' => 2})
+    assert_equal(1, m.count) # field doesn't get updated
+
+    a.update({'id' => 2})
+    assert_equal(1, m.count) # field doesn't get updated
+  end
 end

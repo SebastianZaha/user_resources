@@ -1,6 +1,10 @@
 class ModelStub
 
-  attr_accessor :attributes
+  attr_accessor :attributes, :count
+
+  def initialize
+    @count = 0 # used for attribute_changed? tests
+  end
 
   def self.find(*args)
   end
